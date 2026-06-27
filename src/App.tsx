@@ -7,6 +7,7 @@ import {
   Star, 
   MessageCircle, 
   X, 
+  Menu,
   Send, 
   ChevronRight, 
   ChevronLeft,
@@ -619,6 +620,11 @@ export default function App() {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [search, setSearch] = useState('');
   const [darkMode, setDarkMode] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [view]);
   const [votedTeamId, setVotedTeamId] = useState<string | null>(() => {
     return localStorage.getItem('brasileirao_voted_team_id');
   });
@@ -752,29 +758,30 @@ export default function App() {
 
       {/* Header */}
       <header className="sticky top-0 z-30 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            <div className="flex items-center gap-2 cursor-pointer" onClick={() => setView('home')}>
-              <div className="w-12 h-12 flex items-center justify-center bg-brasil-green rounded-full border-2 border-brasil-green/40 overflow-hidden shadow-md">
-                <img 
-                  src="/ball_logo.png" 
-                  alt="Logo" 
-                  className="w-full h-full object-cover scale-[1.15] hover:scale-125 transition-transform duration-300" 
-                  referrerPolicy="no-referrer"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none';
-                    const parent = e.currentTarget.parentElement;
-                    if (parent) {
-                      parent.classList.add('flex', 'items-center', 'justify-center', 'bg-brasil-green', 'text-white');
-                      parent.innerHTML = '<span class="font-black text-xl">B</span>';
-                    }
-                  }}
-                />
-              </div>
-              <h1 className="text-xl font-black tracking-tight text-gray-900 dark:text-gray-100 hidden sm:block">
-                Brasileirão
-              </h1>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setView('home')}>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center bg-brasil-green rounded-full border-2 border-brasil-green/40 overflow-hidden shadow-md">
+              <img 
+                src="/ball_logo.png" 
+                alt="Logo" 
+                className="w-full h-full object-cover scale-[1.15] hover:scale-125 transition-transform duration-300" 
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  const parent = e.currentTarget.parentElement;
+                  if (parent) {
+                    parent.classList.add('flex', 'items-center', 'justify-center', 'bg-brasil-green', 'text-white');
+                    parent.innerHTML = '<span class="font-black text-lg sm:text-xl">B</span>';
+                  }
+                }}
+              />
             </div>
+            <h1 className="text-lg sm:text-xl font-black tracking-tight text-gray-900 dark:text-gray-100">
+              Brasileirão
+            </h1>
+          </div>
           
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8 mx-8">
             <button 
               onClick={() => setView('home')}
@@ -808,7 +815,8 @@ export default function App() {
             </button>
           </nav>
 
-          <div className="relative flex-1 max-w-md">
+          {/* Desktop Search */}
+          <div className="hidden md:block relative flex-1 max-w-md mx-4">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
             <input 
               type="text" 
@@ -819,35 +827,173 @@ export default function App() {
             />
           </div>
 
-          <div className="flex items-center gap-3 ml-4">
+          {/* Header Controls */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Desktop-only action buttons */}
+            <div className="hidden md:flex items-center gap-3">
+              <button 
+                onClick={() => {
+                  const nextLang = lang === 'fr' ? 'pt' : 'fr';
+                  setLang(nextLang);
+                  localStorage.setItem('brasileirao_lang', nextLang);
+                }}
+                className="p-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center gap-1.5 cursor-pointer"
+                title={lang === 'fr' ? "Mudar para Português (Brasil)" : "Changer en Français"}
+              >
+                <span className="text-xl leading-none">{lang === 'fr' ? '🇧🇷' : '🇫🇷'}</span>
+                <span className="font-mono text-xs hidden sm:inline">{lang === 'fr' ? 'PT' : 'FR'}</span>
+              </button>
+              <button 
+                onClick={() => setDarkMode(!darkMode)}
+                className="p-2.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                title={darkMode ? t('theme_light') : t('theme_dark')}
+              >
+                {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+              </button>
+              <button 
+                onClick={() => setShowWelcome(true)}
+                className="p-2.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                title={t('show_welcome')}
+              >
+                <HelpCircle size={20} />
+              </button>
+            </div>
+
+            {/* Mobile hamburger menu toggle button */}
             <button 
-              onClick={() => {
-                const nextLang = lang === 'fr' ? 'pt' : 'fr';
-                setLang(nextLang);
-                localStorage.setItem('brasileirao_lang', nextLang);
-              }}
-              className="p-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center gap-1.5 cursor-pointer"
-              title={lang === 'fr' ? "Mudar para Português (Brasil)" : "Changer en Français"}
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center justify-center cursor-pointer"
+              aria-label="Menu"
             >
-              <span className="text-xl leading-none">{lang === 'fr' ? '🇧🇷' : '🇫🇷'}</span>
-              <span className="font-mono text-xs hidden sm:inline">{lang === 'fr' ? 'PT' : 'FR'}</span>
-            </button>
-            <button 
-              onClick={() => setDarkMode(!darkMode)}
-              className="p-2.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-              title={darkMode ? t('theme_light') : t('theme_dark')}
-            >
-              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
-            <button 
-              onClick={() => setShowWelcome(true)}
-              className="p-2.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-              title={t('show_welcome')}
-            >
-              <HelpCircle size={20} />
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
         </div>
+
+        {/* Mobile Dropdown Drawer Menu */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+              className="md:hidden border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-950 overflow-hidden"
+            >
+              <div className="px-5 py-5 space-y-5">
+                {/* Mobile Search - visible only when applicable */}
+                {(view === 'home' || view === 'legends') && (
+                  <div className="relative w-full">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                    <input 
+                      type="text" 
+                      placeholder={view === 'home' ? t('search_clubs') : t('search_legends')}
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="w-full bg-gray-100 dark:bg-gray-800 dark:text-gray-200 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-brasil-green transition-all"
+                    />
+                  </div>
+                )}
+
+                {/* Mobile Navigation List */}
+                <nav className="flex flex-col gap-1.5">
+                  <button 
+                    onClick={() => setView('home')}
+                    className={`flex items-center justify-between px-4 py-3 rounded-xl font-bold transition-all text-sm ${
+                      view === 'home' 
+                        ? 'bg-brasil-green/10 text-brasil-green dark:bg-brasil-green/20' 
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900'
+                    }`}
+                  >
+                    <span>{t('clubs')}</span>
+                    <ChevronRight size={16} className={view === 'home' ? 'text-brasil-green' : 'text-gray-400'} />
+                  </button>
+                  <button 
+                    onClick={() => setView('legends')}
+                    className={`flex items-center justify-between px-4 py-3 rounded-xl font-bold transition-all text-sm ${
+                      view === 'legends' 
+                        ? 'bg-brasil-green/10 text-brasil-green dark:bg-brasil-green/20' 
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900'
+                    }`}
+                  >
+                    <span>{t('legends')}</span>
+                    <ChevronRight size={16} className={view === 'legends' ? 'text-brasil-green' : 'text-gray-400'} />
+                  </button>
+                  <button 
+                    onClick={() => setView('stadiums')}
+                    className={`flex items-center justify-between px-4 py-3 rounded-xl font-bold transition-all text-sm ${
+                      view === 'stadiums' 
+                        ? 'bg-brasil-green/10 text-brasil-green dark:bg-brasil-green/20' 
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900'
+                    }`}
+                  >
+                    <span>{t('stades')}</span>
+                    <ChevronRight size={16} className={view === 'stadiums' ? 'text-brasil-green' : 'text-gray-400'} />
+                  </button>
+                  <button 
+                    onClick={() => setView('voting')}
+                    className={`flex items-center justify-between px-4 py-3 rounded-xl font-bold transition-all text-sm ${
+                      view === 'voting' 
+                        ? 'bg-brasil-green/10 text-brasil-green dark:bg-brasil-green/20' 
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900'
+                    }`}
+                  >
+                    <span>{t('voter')}</span>
+                    <ChevronRight size={16} className={view === 'voting' ? 'text-brasil-green' : 'text-gray-400'} />
+                  </button>
+                  <button 
+                    onClick={() => setView('game')}
+                    className={`flex items-center justify-between px-4 py-3 rounded-xl font-bold transition-all text-sm ${
+                      view === 'game' 
+                        ? 'bg-brasil-green/10 text-brasil-green dark:bg-brasil-green/20' 
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900'
+                    }`}
+                  >
+                    <span>{t('minigame')}</span>
+                    <ChevronRight size={16} className={view === 'game' ? 'text-brasil-green' : 'text-gray-400'} />
+                  </button>
+                </nav>
+
+                {/* Divider */}
+                <div className="h-[1px] bg-gray-100 dark:bg-gray-800" />
+
+                {/* Mobile Quick Settings Row */}
+                <div className="grid grid-cols-3 gap-2 pt-1">
+                  <button 
+                    onClick={() => {
+                      const nextLang = lang === 'fr' ? 'pt' : 'fr';
+                      setLang(nextLang);
+                      localStorage.setItem('brasileirao_lang', nextLang);
+                    }}
+                    className="p-3 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex flex-col items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <span className="text-xl leading-none">{lang === 'fr' ? '🇧🇷' : '🇫🇷'}</span>
+                    <span className="font-mono text-[10px] font-extrabold">{lang === 'fr' ? 'PT-BR' : 'FRANÇAIS'}</span>
+                  </button>
+
+                  <button 
+                    onClick={() => setDarkMode(!darkMode)}
+                    className="p-3 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex flex-col items-center justify-center gap-1 cursor-pointer"
+                  >
+                    {darkMode ? <Sun size={18} className="text-brasil-yellow" /> : <Moon size={18} />}
+                    <span className="text-[10px] font-extrabold uppercase">{darkMode ? 'Clair' : 'Sombre'}</span>
+                  </button>
+
+                  <button 
+                    onClick={() => {
+                      setShowWelcome(true);
+                      setMobileMenuOpen(false);
+                    }}
+                    className="p-3 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex flex-col items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <HelpCircle size={18} />
+                    <span className="text-[10px] font-extrabold uppercase">Aide</span>
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-12 space-y-20">
